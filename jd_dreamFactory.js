@@ -91,7 +91,7 @@ async function jdDreamFactory() {
   if (!$.unActive) return
   await getUserElectricity();
   await taskList();
-  await investElectric();
+  //await investElectric();
   await hireAward();
   await PickUp();
   await stealFriend();
