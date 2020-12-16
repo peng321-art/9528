@@ -19,7 +19,21 @@ const shareCodes = [
     nc: $.getdata("nc_shareCode2") || "",
     mc: $.getdata("mc_shareCode2") || "",
     ddgc: $.getdata("dd_shareCode2") || "",
-    jxgc: $.getdata("jx_shareCode2") || "",
+    jxgc: $.getdata("jx_shareCode2") || "wKd4fWvKOUyDvCuXbTDCpA==",
+  },
+  {
+    zd: $.getdata("zd_shareCode2") || "",
+    nc: $.getdata("nc_shareCode2") || "",
+    mc: $.getdata("mc_shareCode2") || "",
+    ddgc: $.getdata("dd_shareCode2") || "",
+    jxgc: $.getdata("jx_shareCode2") || "cDqnd2ebXc6tpkeI9fWp_A==",
+  },
+  {
+    zd: $.getdata("zd_shareCode2") || "",
+    nc: $.getdata("nc_shareCode2") || "",
+    mc: $.getdata("mc_shareCode2") || "",
+    ddgc: $.getdata("dd_shareCode2") || "",
+    jxgc: $.getdata("jx_shareCode2") || "ikm5OfAs-umWBW_0fSx0Gw==,
   },
 ];
 $.result = [];
