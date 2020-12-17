@@ -10,7 +10,7 @@ on:
   watch:
     types: started
   repository_dispatch:
-    types: shareCodes_boarding
+    types: shareCode-auto
 jobs:
   build:
 
@@ -35,7 +35,7 @@ jobs:
           npm install
       - name: '运行 【京东随机助力码】'
         run: |
-          node jd_shareCodes_boarding.js
+          node shareCode-auto.js
         env:
           JD_COOKIE: ${{ secrets.JD_COOKIE }}
           JD_DEBUG: ${{ secrets.JD_DEBUG }}
