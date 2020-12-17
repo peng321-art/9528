@@ -2,7 +2,7 @@
 *
     Name: 京喜财富岛
     Address: 京喜App ====>>>> 全民赚大钱
-    Update: 2020/12/14 20:50
+    Update: 2020/12/17 14:50
     Thanks:
       whyour大佬
       TG: https://t.me/joinchat/O1WgnBbM18YjQQVFQ_D86w
@@ -578,7 +578,7 @@ function createSuperAssistUser() {
   return new Promise(resolve => {
     const sceneList = eval('('+ JSON.stringify($.info.SceneList) +')');
     const sceneIds = Object.keys($.info.SceneList);
-    const sceneId = Math.min(sceneIds);
+    const sceneId = Math.min(...sceneIds);
     $.get({ url: 'https://api.ninesix.cc/api/jx-cfd' }, (err, resp, _data) => {
       try {
         const { data = {} } = JSON.parse(_data);
@@ -607,7 +607,7 @@ function createAssistUser() {
   return new Promise(resolve => {
     const sceneList = eval('('+ JSON.stringify($.info.SceneList) +')');
     const sceneIds = Object.keys($.info.SceneList);
-    const sceneId = Math.max(sceneIds);
+    const sceneId = Math.min(...sceneIds);
     $.get({ url: 'https://api.ninesix.cc/api/jx-cfd' }, (err, resp, _data) => {
       try {
         const { data = {} } = JSON.parse(_data);
