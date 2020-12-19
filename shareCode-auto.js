@@ -25,7 +25,7 @@ const shareCodes = [
     zd: $.getdata("zd_shareCode3") || "",
     nc: $.getdata("nc_shareCode3") || "",
     mc: $.getdata("mc_shareCode3") || "",
-    ddgc: $.getdata("dd_shareCode3") || "",
+    ddgc: $.getdata("dd_shareCode3") || "P04z54XCjVWnYaS5m9cZ2f63ShOww_V6S6HQJY",
     jxgc: $.getdata("jx_shareCode3") || "cDqnd2ebXc6tpkeI9fWp_A==",
   },
   {
