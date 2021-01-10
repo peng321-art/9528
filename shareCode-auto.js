@@ -42,6 +42,27 @@ const shareCodes = [
     ddgc: $.getdata("dd_shareCode4") || "",
     jxgc: $.getdata("jx_shareCode4") || "0EkFNx37f52PjfCW4HeyOw==",
   },
+  {
+    zd: $.getdata("zd_shareCode4") || "",
+    nc: $.getdata("nc_shareCode4") || "",
+    mc: $.getdata("mc_shareCode4") || "",
+    ddgc: $.getdata("dd_shareCode4") || "",
+    jxgc: $.getdata("jx_shareCode4") || "zU46cGThMmRUgLGopAf32Q==",
+  },
+  {
+    zd: $.getdata("zd_shareCode4") || "",
+    nc: $.getdata("nc_shareCode4") || "",
+    mc: $.getdata("mc_shareCode4") || "",
+    ddgc: $.getdata("dd_shareCode4") || "",
+    jxgc: $.getdata("jx_shareCode4") || "8gxEoopQ8xMMDtbGR-FiVg==",
+  },
+  {
+    zd: $.getdata("zd_shareCode4") || "",
+    nc: $.getdata("nc_shareCode4") || "",
+    mc: $.getdata("mc_shareCode4") || "",
+    ddgc: $.getdata("dd_shareCode4") || "",
+    jxgc: $.getdata("jx_shareCode4") || "9pbHpT2ZLEpbjc3KrfRf4w==",
+  },
 ];
 $.result = [];
 $.random = Math.floor(Math.random() * 60);
