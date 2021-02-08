@@ -3,7 +3,7 @@
  * @Github: https://github.com/whyour
  * @Date: 2020-11-29 13:14:19
  * @LastEditors: whyour
- * @LastEditTime: 2021-01-09 13:53:17
+ * @LastEditTime: 2021-02-01 10:18:45
  * 多谢： https://github.com/MoPoQAQ, https://github.com/lxk0301
  * 添加随机助力
  * 自动开团助力
@@ -25,9 +25,10 @@
 const $ = new Env('京喜工厂');
 const JD_API_HOST = 'https://m.jingxi.com/';
 const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
-$.autoCharge = $.getdata('gc_autoCharge') ? $.getdata('gc_autoCharge') === 'true' : false;
+$.autoCharge = $.getdata('gc_autoCharge') ? $.getdata('gc_autoCharge') === 'true' : true;
 $.showLog = $.getdata('gc_showLog') ? $.getdata('gc_showLog') === 'true' : false;
 $.notifyTime = $.getdata('gc_notifyTime');
+$.tokens = [$.getdata('jxnc_token1') || '{}', $.getdata('jxnc_token2') || '{}'];
 $.result = [];
 $.cookieArr = [];
 $.currentCookie = '';
@@ -39,6 +40,7 @@ $.userTuanInfo = {};
   if (!getCookies()) return;
   for (let i = 0; i < $.cookieArr.length; i++) {
     $.currentCookie = $.cookieArr[i];
+    $.currentToken = JSON.parse($.tokens[i] || '{}');
     if ($.currentCookie) {
       const userName = decodeURIComponent(
         $.currentCookie.match(/pt_pin=(.+?);/) && $.currentCookie.match(/pt_pin=(.+?);/)[1],
@@ -46,6 +48,10 @@ $.userTuanInfo = {};
       $.log(`\n开始【京东账号${i + 1}】${userName}`);
       $.result.push(`【京东账号${i + 1}】${userName}`);
       const beginInfo = await getUserInfo();
+      if (beginInfo && typeof beginInfo === 'boolean') {
+        $.result.push(`【账户】未选择商品，跳过`);
+        continue;
+      }
       await $.wait(500);
       await getCommodityDetail();
       if (checkProductProcess()) return;
@@ -67,7 +73,7 @@ $.userTuanInfo = {};
       const endInfo = await getUserInfo();
       $.info.commodityInfo && $.result.push(
         `【名称】：${$.info.commodityInfo.name}`,
-        `【电力】：获得(${beginInfo.user.electric}) 还需(${
+        `【电力】：获得(${endInfo.user.electric - beginInfo.user.electric}) 还需(${
           endInfo.productionInfo.needElectric - beginInfo.productionInfo.investedElectric
         })`,
         `【账户剩余】：${endInfo.user.electric}`,
@@ -79,12 +85,12 @@ $.userTuanInfo = {};
       await submitInviteId(userName);
       await $.wait(500);
       await createAssistUser();
-      // await $.wait(500);
-      // await getTuanId();
-      // await $.wait(500);
-      // await submitTuanId(userName);
-      // await $.wait(500);
-      // await joinTuan();
+      await $.wait(500);
+      await getTuanId();
+      await $.wait(500);
+      await submitTuanId(userName);
+      await $.wait(500);
+      await joinTuan();
     }
   }
   await showMsg();
@@ -96,7 +102,8 @@ function getCookies() {
   if ($.isNode()) {
     $.cookieArr = Object.values(jdCookieNode);
   } else {
-    $.cookieArr = [$.getdata('CookieJD') || '', $.getdata('CookieJD2') || ''];
+    const CookiesJd = JSON.parse($.getdata("CookiesJD") || "[]").filter(x => !!x).map(x => x.cookie);
+    $.cookieArr = [$.getdata("CookieJD") || "", $.getdata("CookieJD2") || "", ...CookiesJd];
   }
   if (!$.cookieArr[0]) {
     $.msg($.name, '【提示】请先获取京东账号一cookie\n直接使用NobyDa的京东签到获取', 'https://bean.m.jd.com/', {
@@ -113,6 +120,9 @@ function getUserInfo() {
       try {
         const { ret, data: { factoryList = [], productionList = [], user = {} } = {}, msg } = JSON.parse(data);
         $.log(`\n获取用户信息：${msg}\n${$.showLog ? data : ''}`);
+        if (!productionList || !productionList[0]) {
+          resolve(true);
+        }
         $.info = {
           ...$.info,
           factoryInfo: factoryList[0],
@@ -197,7 +207,7 @@ function collectElectricity(facId, master) {
     $.get(
       taskUrl(
         'generator/CollectCurrentElectricity',
-        `factoryid=${facId}&master=${master ? master : ''}&apptoken=&pgtimestamp=&phoneID=&doubleflag=1&_stk=_time%2Capptoken%2Cdoubleflag%2Cfactoryid%2Cpgtimestamp%2CphoneID%2CtimeStamp%2Czone`,
+        `factoryid=${facId}&master=${master ? master : ''}&apptoken=${$.currentToken['farm_jstoken'] || ''}&pgtimestamp=${$.currentToken['timestamp'] || ''}&phoneID=${$.currentToken['phoneid'] || ''}&doubleflag=1&_stk=_time%2Capptoken%2Cdoubleflag%2Cfactoryid%2Cpgtimestamp%2CphoneID%2Czone`,
       ),
       (err, resp, data) => {
         try {
@@ -265,7 +275,7 @@ function pickUpComponent(placeId, pin, isMe) {
 
 function getTaskList() {
   return new Promise(async resolve => {
-    $.get(taskListUrl('GetUserTaskStatusList'), async (err, resp, data) => {
+    $.get(taskListUrl('GetUserTaskStatusList', `_stk=_cfd_t%2CbizCode%2CdwEnv%2Cptag%2Csource%2CstrZone%2CtaskId`), async (err, resp, data) => {
       try {
         const { ret, data: { userTaskStatusList = [] } = {}, msg } = JSON.parse(data);
         $.allTask = userTaskStatusList.filter(x => x.awardStatus !== 1);
@@ -307,7 +317,7 @@ function browserTask() {
 
 function awardTask({ taskId, taskName }) {
   return new Promise(resolve => {
-    $.get(taskListUrl('Award', `taskId=${taskId}`), (err, resp, data) => {
+    $.get(taskListUrl('Award', `taskId=${taskId}&_stk=_time%2CbizCode%2Csource%2CtaskId`), (err, resp, data) => {
       try {
         const { msg, ret, data: { prizeInfo = '' } = {} } = JSON.parse(data);
         let str = '';
@@ -334,7 +344,7 @@ function doTask({ taskId, completedTimes, configTargetTimes, taskName }) {
       $.log(`\n${taskName}[做任务]： mission success`);
       return;
     }
-    $.get(taskListUrl('DoTask', `taskId=${taskId}`), (err, resp, data) => {
+    $.get(taskListUrl('DoTask', `taskId=${taskId}&_stk=_time%2CbizCode%2CconfigExtra%2Csource%2CtaskId`), (err, resp, data) => {
       try {
         const { msg, ret } = JSON.parse(data);
         $.log(
@@ -495,6 +505,7 @@ function createAssistUser() {
         });
       } catch (e) {
         $.logErr(e, resp);
+        resolve();
       }
     });
   });
@@ -502,7 +513,7 @@ function createAssistUser() {
 
 function getTuanId() {
   return new Promise(async resolve => {
-    $.get(taskUrl('tuan/QueryActiveConfig', `activeId=t2cdKwg2QPBzAqd5KMCNHg%3D%3D`), async (err, resp, data) => {
+    $.get(taskUrl('tuan/QueryActiveConfig', `activeId=TvjO5k4gaVqVHMRJIogd_g%3D%3D`), async (err, resp, data) => {
       try {
         const { msg, data: { userTuanInfo } = {} } = JSON.parse(data);
         $.log(`\n获取团id：${msg}\n${$.showLog ? data : ''}`);
@@ -528,7 +539,7 @@ function getTuanId() {
 
 function getTuanInfo(body) {
   return new Promise(async resolve => {
-    $.get(taskUrl('tuan/QueryTuan', `activeId=t2cdKwg2QPBzAqd5KMCNHg%3D%3D&${body}`), async (err, resp, data) => {
+    $.get(taskUrl('tuan/QueryTuan', `activeId=TvjO5k4gaVqVHMRJIogd_g%3D%3D&${body}`), async (err, resp, data) => {
       try {
         const { msg, data: { tuanInfo = [] } = {} } = JSON.parse(data);
         $.log(`\n获取开团信息：${msg}\n${$.showLog ? data : ''}`);
@@ -575,7 +586,7 @@ function submitTuanId(userName) {
 function createTuan() {
   return new Promise(async resolve => {
     $.get(
-      taskTuanUrl('tuan/CreateTuan', `activeId=t2cdKwg2QPBzAqd5KMCNHg%3D%3D&isOpenApp=2`),
+      taskTuanUrl('tuan/CreateTuan', `activeId=TvjO5k4gaVqVHMRJIogd_g%3D%3D&isOpenApp=1&_stk=_time%2CactiveId%2CisOpenApp`),
       async (err, resp, _data) => {
         try {
           const { msg, data = {} } = JSON.parse(_data);
@@ -600,7 +611,7 @@ function joinTuan() {
         const { data = {} } = JSON.parse(_data);
         $.log(`\n${data.value}\n${$.showLog ? _data : ''}`);
         $.get(
-          taskTuanUrl('tuan/JoinTuan', `activeId=t2cdKwg2QPBzAqd5KMCNHg%3D%3D&tuanId=${data.value}`),
+          taskTuanUrl('tuan/JoinTuan', `activeId=TvjO5k4gaVqVHMRJIogd_g%3D%3D&tuanId=${data.value}`),
           async (err, resp, data) => {
             try {
               const { msg } = JSON.parse(data);
@@ -618,6 +629,7 @@ function joinTuan() {
         );
       } catch (e) {
         $.logErr(e, resp);
+        resolve();
       }
     });
   });
